@@ -8,3 +8,5 @@ public class Activity {
     // Fields: id, student (ManyToOne), week (ManyToOne), category (enum), description,
     //         plannedHours, actualHours, status (enum), createdAt, updatedAt
 }
+
+// Test for pushing
