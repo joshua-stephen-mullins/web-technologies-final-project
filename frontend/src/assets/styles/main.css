@@ -1,0 +1,11 @@
+/* Global styles for Project Pulse */
+/* Vuetify handles most styling — add only overrides here */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+}

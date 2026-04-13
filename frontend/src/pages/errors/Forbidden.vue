@@ -1,0 +1,10 @@
+<template>
+  <v-container class="text-center pa-16">
+    <v-icon size="80" color="error">mdi-lock</v-icon>
+    <h1 class="text-h4 mt-4">403 — Access Denied</h1>
+    <v-btn class="mt-6" to="/" color="primary">Go Home</v-btn>
+  </v-container>
+</template>
+<script setup lang="ts">
+// Shared
+</script>
