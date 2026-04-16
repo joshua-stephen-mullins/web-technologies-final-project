@@ -2,7 +2,8 @@ package team.projectpulse.rubric;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-// Owner: Josh (Person 1)
+import java.util.List;
+
 public interface CriterionRepository extends JpaRepository<Criterion, Integer> {
-    // TODO: findByRubricIdOrderBySortOrder(Integer rubricId): List<Criterion>
+    List<Criterion> findByRubricIdOrderBySortOrder(Integer rubricId);
 }

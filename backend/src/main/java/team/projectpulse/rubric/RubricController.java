@@ -1,18 +1,64 @@
 package team.projectpulse.rubric;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
+import team.projectpulse.rubric.converter.RubricToRubricDtoConverter;
+import team.projectpulse.rubric.dto.RubricDto;
+import team.projectpulse.rubric.dto.RubricRequest;
+import team.projectpulse.system.Result;
+import team.projectpulse.system.StatusCode;
 
-// Owner: Josh (Person 1)
-// Related UCs: UC-1 (create rubric)
-// Endpoints:
-//   GET    /api/rubrics         - list all rubrics
-//   POST   /api/rubrics         - UC-1: create rubric
-//   GET    /api/rubrics/{id}    - get rubric details
-//   PUT    /api/rubrics/{id}    - update rubric (creates a copy per UC-4 business rule)
-//   DELETE /api/rubrics/{id}    - delete rubric
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/rubrics")
 public class RubricController {
-    // TODO: Implement
+
+    private final RubricService rubricService;
+    private final RubricToRubricDtoConverter converter;
+
+    public RubricController(RubricService rubricService, RubricToRubricDtoConverter converter) {
+        this.rubricService = rubricService;
+        this.converter = converter;
+    }
+
+    @GetMapping
+    public Result getAllRubrics() {
+        List<RubricDto> dtos = rubricService.findAllRubrics().stream()
+                .map(converter::convert)
+                .toList();
+        return new Result(true, StatusCode.SUCCESS, "Rubrics retrieved", dtos);
+    }
+
+    @GetMapping("/{id}")
+    public Result getRubricById(@PathVariable Integer id) {
+        return new Result(true, StatusCode.SUCCESS, "Rubric retrieved", converter.convert(rubricService.findRubricById(id)));
+    }
+
+    @PostMapping
+    public Result createRubric(@Valid @RequestBody RubricRequest request) {
+        List<RubricService.CriterionRequest> criteriaReqs = toCriterionRequests(request);
+        Rubric rubric = rubricService.createRubric(request.name(), criteriaReqs);
+        return new Result(true, StatusCode.CREATED, "Rubric created", converter.convert(rubric));
+    }
+
+    @PutMapping("/{id}")
+    public Result updateRubric(@PathVariable Integer id, @Valid @RequestBody RubricRequest request) {
+        List<RubricService.CriterionRequest> criteriaReqs = toCriterionRequests(request);
+        Rubric rubric = rubricService.updateRubric(id, request.name(), criteriaReqs);
+        return new Result(true, StatusCode.SUCCESS, "Rubric updated", converter.convert(rubric));
+    }
+
+    @DeleteMapping("/{id}")
+    public Result deleteRubric(@PathVariable Integer id) {
+        rubricService.deleteRubric(id);
+        return new Result(true, StatusCode.SUCCESS, "Rubric deleted");
+    }
+
+    private List<RubricService.CriterionRequest> toCriterionRequests(RubricRequest request) {
+        if (request.criteria() == null) return List.of();
+        return request.criteria().stream()
+                .map(c -> new RubricService.CriterionRequest(c.name(), c.description(), c.maxScore()))
+                .toList();
+    }
 }
