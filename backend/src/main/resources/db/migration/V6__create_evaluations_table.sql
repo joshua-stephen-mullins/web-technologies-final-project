@@ -1,5 +1,5 @@
 -- V6: Peer evaluations and per-criterion ratings
--- Owner: Whitey (Person 3)
+-- Owner: Whitney (Person 3)
 -- UCs: UC-28 (submit eval), UC-29 (student view), UC-31 (section report), UC-33 (student report)
 
 CREATE TABLE peer_evaluation (

@@ -6,7 +6,7 @@
 |---|---|---|---|---|
 | Josh Mullins | Person 1 | UC-1,2,3,4,5,6,25,26,30 + Auth infra | `security/`, `user/`, `rubric/`, `section/` | `Login`, `Register`, `ForgotPassword`, `ResetPassword`, `Dashboard`, `Profile`, `rubrics/*`, `sections/*` |
 | Oscar | Person 2 | UC-7,8,9,10,11,12,13,14,15,16,17,27,32 | `team/`, `student/`, `activity/` | `teams/*`, `students/*`, `activities/*` |
-| Whitey | Person 3 | UC-18,19,20,21,22,23,24,28,29,31,33,34 | `instructor/`, `evaluation/` | `instructors/*`, `evaluations/*` |
+| Whitney | Person 3 | UC-18,19,20,21,22,23,24,28,29,31,33,34 | `instructor/`, `evaluation/` | `instructors/*`, `evaluations/*` |
 
 ---
 
@@ -53,7 +53,7 @@
 
 ---
 
-### Whitey (Person 3) — Instructors + Peer Evaluations
+### Whitney (Person 3) — Instructors + Peer Evaluations
 
 | UC | Description | Backend | Frontend |
 |---|---|---|---|
@@ -70,7 +70,7 @@
 | UC-33 | Instructor generates student eval report | `evaluation/EvaluationService.java` | `evaluations/StudentEvaluationReport.vue` |
 | UC-34 | Instructor generates student WAR report | `activity/ActivityService.java` (Oscar's) | `evaluations/StudentWARReport.vue` |
 
-**Note for Whitey:** UC-19/20 (assign/remove instructor on a team) will need to be added to Oscar's `TeamDetail.vue` page — coordinate so you're not both editing the same file. UC-34 calls Oscar's activity backend — his API must be ready first.
+**Note for Whitney:** UC-19/20 (assign/remove instructor on a team) will need to be added to Oscar's `TeamDetail.vue` page — coordinate so you're not both editing the same file. UC-34 calls Oscar's activity backend — his API must be ready first.
 
 ---
 
@@ -78,15 +78,15 @@
 
 ```
 Josh's auth layer  →  everyone's secured endpoints depend on it
-Oscar's TeamDetail →  Whitey needs to add UC-19/20 buttons to it
-Oscar's ActivityService → Whitey's UC-34 calls it
-Josh's UserInvitationService → Oscar (UC-11) and Whitey (UC-18) both call it
+Oscar's TeamDetail →  Whitney needs to add UC-19/20 buttons to it
+Oscar's ActivityService → Whitney's UC-34 calls it
+Josh's UserInvitationService → Oscar (UC-11) and Whitney (UC-18) both call it
 ```
 
 **Recommended build order:**
 1. Josh completes auth + `PeerEvaluationUser` entity first — everyone needs this to run locally
-2. Josh completes Flyway migrations V1–V3 — Oscar and Whitey need the schema
-3. Oscar builds team/student domain — Whitey's instructor assignment needs teams to exist
+2. Josh completes Flyway migrations V1–V3 — Oscar and Whitney need the schema
+3. Oscar builds team/student domain — Whitney's instructor assignment needs teams to exist
 4. Everyone can then build their feature pages in parallel
 
 ---
@@ -151,18 +151,18 @@ npm run dev
 | POST | `/api/students/invite` | UC-11 | Oscar |
 | GET/POST/PUT/DELETE | `/api/activities` | UC-27 | Oscar |
 | GET | `/api/activities/report/team` | UC-32 | Oscar |
-| GET/DELETE | `/api/instructors` | UC-21 | Whitey |
-| GET | `/api/instructors/{id}` | UC-22 | Whitey |
-| PUT | `/api/instructors/{id}/deactivate` | UC-23 | Whitey |
-| PUT | `/api/instructors/{id}/reactivate` | UC-24 | Whitey |
-| POST | `/api/instructors/invite` | UC-18 | Whitey |
-| POST | `/api/teams/{id}/instructors` | UC-19 | Whitey |
-| DELETE | `/api/teams/{id}/instructors/{iid}` | UC-20 | Whitey |
-| POST | `/api/evaluations` | UC-28 | Whitey |
-| GET | `/api/evaluations/my-report` | UC-29 | Whitey |
-| GET | `/api/evaluations/report/section` | UC-31 | Whitey |
-| GET | `/api/evaluations/report/student/{id}` | UC-33 | Whitey |
-| GET | `/api/activities/report/student/{id}` | UC-34 | Whitey |
+| GET/DELETE | `/api/instructors` | UC-21 | Whitney |
+| GET | `/api/instructors/{id}` | UC-22 | Whitney |
+| PUT | `/api/instructors/{id}/deactivate` | UC-23 | Whitney |
+| PUT | `/api/instructors/{id}/reactivate` | UC-24 | Whitney |
+| POST | `/api/instructors/invite` | UC-18 | Whitney |
+| POST | `/api/teams/{id}/instructors` | UC-19 | Whitney |
+| DELETE | `/api/teams/{id}/instructors/{iid}` | UC-20 | Whitney |
+| POST | `/api/evaluations` | UC-28 | Whitney |
+| GET | `/api/evaluations/my-report` | UC-29 | Whitney |
+| GET | `/api/evaluations/report/section` | UC-31 | Whitney |
+| GET | `/api/evaluations/report/student/{id}` | UC-33 | Whitney |
+| GET | `/api/activities/report/student/{id}` | UC-34 | Whitney |
 
 ---
 

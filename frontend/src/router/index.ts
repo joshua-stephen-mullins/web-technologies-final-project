@@ -48,12 +48,12 @@ const router = createRouter({
         { path: 'activities', component: () => import('@/pages/activities/WeeklyActivityReport.vue') },
         { path: 'activities/report', component: () => import('@/pages/activities/WARReport.vue') },
 
-        // --- Whitey: Instructors ---
+        // --- Whitney: Instructors ---
         { path: 'instructors', component: () => import('@/pages/instructors/InstructorList.vue') },
         { path: 'instructors/invite', component: () => import('@/pages/instructors/InstructorInvite.vue') },
         { path: 'instructors/:id', component: () => import('@/pages/instructors/InstructorDetail.vue') },
 
-        // --- Whitey: Evaluations ---
+        // --- Whitney: Evaluations ---
         { path: 'evaluations/submit', component: () => import('@/pages/evaluations/PeerEvaluationSubmit.vue') },
         { path: 'evaluations/my-report', component: () => import('@/pages/evaluations/MyEvaluationReport.vue') },
         { path: 'evaluations/section-report', component: () => import('@/pages/evaluations/SectionEvaluationReport.vue') },

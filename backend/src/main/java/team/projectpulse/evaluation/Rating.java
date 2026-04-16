@@ -5,7 +5,7 @@ import team.projectpulse.rubric.Criterion;
 
 import java.math.BigDecimal;
 
-// Owner: Whitey (Person 3)
+// Owner: Whitney (Person 3)
 // A single criterion score within a peer evaluation (e.g. Quality of Work: 8/10)
 @Entity
 @Table(name = "rating")

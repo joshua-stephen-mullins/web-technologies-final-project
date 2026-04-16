@@ -6,5 +6,5 @@
 </template>
 
 <script setup lang="ts">
-// Owner: Whitey (Person 3) — UC-28
+// Owner: Whitney (Person 3) — UC-28
 </script>
