@@ -1,7 +1,27 @@
 package team.projectpulse.instructor;
 
-// Owner: Whitey (Person 3)
-// JPA Specifications for UC-21: find instructors by name, team, status
+import org.springframework.data.jpa.domain.Specification;
+
 public class InstructorSpecs {
-    // TODO: Implement static Specification<Instructor> methods
+
+    private InstructorSpecs() {}
+
+    public static Specification<Instructor> hasFirstName(String firstName) {
+        return (root, query, cb) ->
+                cb.like(cb.lower(root.get("firstName")), "%" + firstName.toLowerCase() + "%");
+    }
+
+    public static Specification<Instructor> hasLastName(String lastName) {
+        return (root, query, cb) ->
+                cb.like(cb.lower(root.get("lastName")), "%" + lastName.toLowerCase() + "%");
+    }
+
+    public static Specification<Instructor> isEnabled(boolean enabled) {
+        return (root, query, cb) -> cb.equal(root.get("enabled"), enabled);
+    }
+
+    public static Specification<Instructor> hasRole(String role) {
+        return (root, query, cb) ->
+                cb.like(root.get("roles"), "%" + role + "%");
+    }
 }

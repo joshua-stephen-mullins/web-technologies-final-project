@@ -2,7 +2,7 @@ package team.projectpulse.evaluation.dto;
 
 import java.util.List;
 
-// Owner: Whitey (Person 3)
+// Owner: Whitney (Person 3)
 // Outbound report DTO for UC-29, UC-31, UC-33
 public record EvaluationReportDto(String weekLabel, List<StudentAverageDto> studentAverages,
                                    List<String> nonSubmitters) {

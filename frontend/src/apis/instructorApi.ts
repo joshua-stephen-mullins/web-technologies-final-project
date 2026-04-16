@@ -1,7 +1,8 @@
 import axiosClient from './axiosClient'
 
-// Owner: Whitey (Person 3) — UC-18,19,20,21,22,23,24
+// Owner: Whitney (Person 3)
 export const instructorApi = {
-  // TODO: search(params), getById(id), deactivate(id), reactivate(id),
-  //       assign(teamId, instructorId), remove(teamId, instructorId), invite(emails)
+  invite(emails: string[]) {
+    return axiosClient.post('/api/instructors/invite', emails)
+  },
 }

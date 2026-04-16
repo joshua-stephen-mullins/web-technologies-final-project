@@ -2,7 +2,7 @@ package team.projectpulse.instructor;
 
 import jakarta.persistence.*;
 
-// Owner: Whitey (Person 3)
+// Owner: Whitney (Person 3)
 // Related UCs: UC-18,19,20,21,22,23,24,30
 // Instructors are PeerEvaluationUsers with ROLE_INSTRUCTOR — mapped to the same table for role-filtered queries
 @Entity

@@ -2,7 +2,7 @@ package team.projectpulse.evaluation;
 
 import org.springframework.stereotype.Service;
 
-// Owner: Whitey (Person 3)
+// Owner: Whitney (Person 3)
 @Service
 public class EvaluationService {
     // TODO: Implement

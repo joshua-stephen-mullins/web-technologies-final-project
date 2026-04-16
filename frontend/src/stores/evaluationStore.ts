@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-// Owner: Whitey (Person 3)
+// Owner: Whitney (Person 3)
 // UC-28,29,31,33,34
 export const useEvaluationStore = defineStore('evaluation', {
   state: () => ({
