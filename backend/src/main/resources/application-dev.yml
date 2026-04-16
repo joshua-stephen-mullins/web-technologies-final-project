@@ -1,8 +1,16 @@
 spring:
+  datasource:
+    username: root
+    password:
   jpa:
     show-sql: true
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: false
 
 logging:
   level:
     team.projectpulse: DEBUG
     org.springframework.security: DEBUG
+    org.flywaydb: DEBUG

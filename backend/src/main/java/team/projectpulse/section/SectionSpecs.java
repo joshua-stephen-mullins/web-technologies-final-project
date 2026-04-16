@@ -1,8 +1,13 @@
 package team.projectpulse.section;
 
-// Owner: Josh (Person 1)
-// JPA Specifications for dynamic search queries (UC-2: find sections by name)
+import org.springframework.data.jpa.domain.Specification;
+
 public class SectionSpecs {
-    // TODO: Implement static Specification<Section> methods
-    // - hasSectionName(String name): Specification<Section>
+
+    private SectionSpecs() {}
+
+    public static Specification<Section> hasSectionName(String name) {
+        return (root, query, cb) ->
+                cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%");
+    }
 }

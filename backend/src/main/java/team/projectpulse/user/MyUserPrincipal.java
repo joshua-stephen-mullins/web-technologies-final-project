@@ -1,8 +1,51 @@
 package team.projectpulse.user;
 
-// Owner: Josh (Person 1)
-// Wraps PeerEvaluationUser to implement Spring Security's UserDetails interface
-public class MyUserPrincipal {
-    // TODO: Implement UserDetails
-    // Wrap PeerEvaluationUser and delegate getUsername(), getPassword(), getAuthorities(), etc.
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.stream.Collectors;
+
+public class MyUserPrincipal implements UserDetails {
+
+    private final PeerEvaluationUser user;
+
+    public MyUserPrincipal(PeerEvaluationUser user) {
+        this.user = user;
+    }
+
+    public PeerEvaluationUser getUser() {
+        return user;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Arrays.stream(user.getRoles().split(" "))
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public String getPassword() {
+        return user.getPassword();
+    }
+
+    @Override
+    public String getUsername() {
+        return user.getUsername();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() { return true; }
+
+    @Override
+    public boolean isAccountNonLocked() { return true; }
+
+    @Override
+    public boolean isCredentialsNonExpired() { return true; }
+
+    @Override
+    public boolean isEnabled() { return user.isEnabled(); }
 }

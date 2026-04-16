@@ -3,27 +3,49 @@ import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import 'vuetify/styles'
 
-// TODO: Customize theme colors to match your team's design
 export default createVuetify({
   components,
   directives,
   theme: {
-    defaultTheme: 'light',
+    defaultTheme: 'pulse',
     themes: {
-      light: {
+      pulse: {
+        dark: true,
         colors: {
-          primary: '#1565C0',
-          secondary: '#42A5F5',
-          accent: '#FF7043',
-          error: '#D32F2F',
-          warning: '#F57C00',
-          info: '#0288D1',
-          success: '#388E3C',
+          background:       '#0C0C0E',
+          surface:          '#161618',
+          'surface-bright': '#212124',
+          'surface-light':  '#2A2A2D',
+          primary:          '#0A84FF',
+          secondary:        '#5E5CE6',
+          accent:           '#BF5AF2',
+          error:            '#FF453A',
+          warning:          '#FF9F0A',
+          info:             '#64D2FF',
+          success:          '#30D158',
+          'on-background':  '#F5F5F7',
+          'on-surface':     '#F5F5F7',
+          'on-primary':     '#FFFFFF',
+        },
+        variables: {
+          'border-color':      '#FFFFFF',
+          'border-opacity':    0.08,
+          'hover-opacity':     0.07,
+          'activated-opacity': 0.12,
         },
       },
     },
   },
-  icons: {
-    defaultSet: 'mdi',
+  defaults: {
+    VCard:      { elevation: 0 },
+    VBtn:       { elevation: 0, rounded: 'lg' },
+    VTextField: { variant: 'outlined', density: 'comfortable', hideDetails: 'auto' },
+    VSelect:    { variant: 'outlined', density: 'comfortable', hideDetails: 'auto' },
+    VTextarea:  { variant: 'outlined', density: 'comfortable', hideDetails: 'auto' },
+    VAlert:     { rounded: 'lg' },
+    VChip:      { rounded: 'xl' },
+    VDialog:    { maxWidth: 500 },
+    VList:      { bgColor: 'transparent' },
   },
+  icons: { defaultSet: 'mdi' },
 })

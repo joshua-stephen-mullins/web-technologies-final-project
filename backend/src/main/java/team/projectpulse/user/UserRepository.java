@@ -2,8 +2,9 @@ package team.projectpulse.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-// Owner: Josh (Person 1)
+import java.util.Optional;
+
 public interface UserRepository extends JpaRepository<PeerEvaluationUser, Integer> {
-    // TODO: Add query methods
-    // findByUsername(String username): Optional<PeerEvaluationUser>
+    Optional<PeerEvaluationUser> findByUsername(String username);
+    boolean existsByUsername(String username);
 }
