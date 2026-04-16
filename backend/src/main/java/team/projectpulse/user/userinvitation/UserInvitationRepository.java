@@ -2,7 +2,9 @@ package team.projectpulse.user.userinvitation;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-// Owner: Josh (Person 1)
+import java.util.Optional;
+
 public interface UserInvitationRepository extends JpaRepository<UserInvitation, Integer> {
-    // TODO: findByInvitationToken(String token): Optional<UserInvitation>
+    Optional<UserInvitation> findByInvitationToken(String token);
+    Optional<UserInvitation> findByEmailAndUsedFalse(String email);
 }

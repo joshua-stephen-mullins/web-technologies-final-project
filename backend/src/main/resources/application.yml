@@ -23,6 +23,9 @@ security:
     secret-key: ${JWT_SECRET_KEY:change-this-in-production-must-be-256-bits}
     token-expiry-in-seconds: 3600
 
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+
 management:
   endpoints:
     web:

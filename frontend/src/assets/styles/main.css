@@ -1,11 +1,107 @@
-/* Global styles for Project Pulse */
-/* Vuetify handles most styling — add only overrides here */
+/* Project Pulse — Dark design system */
 
-* {
-  box-sizing: border-box;
-}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
 
 body {
-  margin: 0;
-  font-family: 'Roboto', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
+               'Helvetica Neue', 'Inter', 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #0C0C0E;
 }
+
+.v-application { font-family: inherit !important; }
+
+/* ── Top Nav ──────────────────────────────────────── */
+.v-app-bar {
+  background: rgba(12, 12, 14, 0.88) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+  box-shadow: none !important;
+}
+
+/* ── Side sheet drawer ────────────────────────────── */
+.v-navigation-drawer {
+  background: #161618 !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.07) !important;
+  box-shadow: -12px 0 48px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ── Cards ────────────────────────────────────────── */
+.v-card {
+  border-radius: 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+}
+
+/* ── Buttons ──────────────────────────────────────── */
+.v-btn {
+  border-radius: 10px !important;
+  letter-spacing: 0 !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+}
+
+/* ── Inputs ───────────────────────────────────────── */
+.v-field--variant-outlined { border-radius: 10px !important; }
+
+/* ── Dialogs ──────────────────────────────────────── */
+.v-overlay__content > .v-card { border-radius: 18px !important; }
+.v-card-title { font-weight: 600 !important; letter-spacing: -0.2px !important; }
+
+/* ── Tables ───────────────────────────────────────── */
+.v-data-table { background: transparent !important; }
+
+/* ── Dividers ─────────────────────────────────────── */
+.v-divider { border-color: rgba(255, 255, 255, 0.07) !important; }
+
+/* ── Typography ───────────────────────────────────── */
+.text-h4, .text-h5, .text-h6 {
+  letter-spacing: -0.3px !important;
+  font-weight: 600 !important;
+}
+.page-title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #F5F5F7;
+  margin: 0;
+}
+.page-sub {
+  font-size: 14px;
+  color: rgba(255,255,255,0.4);
+  margin: 3px 0 0;
+}
+
+/* ── Top nav links (RouterLink) ───────────────────── */
+.top-nav-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  padding: 5px 11px;
+  border-radius: 8px;
+  transition: color 0.15s ease, background 0.15s ease;
+  white-space: nowrap;
+}
+.top-nav-link:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.06);
+}
+.top-nav-link.router-link-active {
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ── Chip ─────────────────────────────────────────── */
+.v-chip { font-size: 12px !important; font-weight: 500 !important; }
+
+/* ── Alerts ───────────────────────────────────────── */
+.v-alert { border-radius: 12px !important; }
+
+/* ── Scrollbar ────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }

@@ -1,7 +1,7 @@
 <template>
   <v-app>
-    <AppNavbar v-if="isAuthenticated" />
-    <AppSidebar v-if="isAuthenticated" />
+    <AppTopNav v-if="isAuthenticated" @open-command="commandOpen = true" />
+    <CommandPalette v-if="isAuthenticated" v-model="commandOpen" />
     <v-main>
       <router-view />
     </v-main>
@@ -9,11 +9,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import AppNavbar from '@/components/layout/AppNavbar.vue'
-import AppSidebar from '@/components/layout/AppSidebar.vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import AppTopNav from '@/components/layout/AppTopNav.vue'
+import CommandPalette from '@/components/CommandPalette.vue'
 import { useAuthStore } from '@/stores/authStore'
 
 const authStore = useAuthStore()
 const isAuthenticated = computed(() => authStore.isAuthenticated)
+const commandOpen = ref(false)
+
+function handleKeydown(e: KeyboardEvent) {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault()
+    if (isAuthenticated.value) commandOpen.value = true
+  }
+}
+
+onMounted(() => window.addEventListener('keydown', handleKeydown))
+onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
 </script>

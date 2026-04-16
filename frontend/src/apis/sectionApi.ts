@@ -1,7 +1,22 @@
 import axiosClient from './axiosClient'
 
-// Owner: Josh (Person 1) — UC-2,3,4,5,6
 export const sectionApi = {
-  // TODO: search(params), getById(id), create(data), update(id, data),
-  //       getWeeks(sectionId), updateActiveWeeks(sectionId, data)
+  search(name?: string) {
+    return axiosClient.get('/api/sections', { params: name ? { name } : {} })
+  },
+  getById(id: number) {
+    return axiosClient.get(`/api/sections/${id}`)
+  },
+  create(data: { name: string; startDate: string; endDate: string; rubricId?: number }) {
+    return axiosClient.post('/api/sections', data)
+  },
+  update(id: number, data: { name: string; startDate: string; endDate: string; rubricId?: number }) {
+    return axiosClient.put(`/api/sections/${id}`, data)
+  },
+  getWeeks(sectionId: number) {
+    return axiosClient.get(`/api/sections/${sectionId}/weeks`)
+  },
+  updateActiveWeeks(sectionId: number, inactiveWeekNumbers: number[]) {
+    return axiosClient.put(`/api/sections/${sectionId}/weeks`, { inactiveWeekNumbers })
+  },
 }
