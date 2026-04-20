@@ -31,7 +31,7 @@ public class Instructor {
     @Column(nullable = false)
     private boolean enabled = true;
 
-    @Column(name = "team_id")
+    @Column(name = "team_id", insertable = false, updatable = false)
     private Integer teamId;
 
     public Instructor() {}

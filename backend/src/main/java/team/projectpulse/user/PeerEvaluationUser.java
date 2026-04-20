@@ -29,8 +29,8 @@ public class PeerEvaluationUser {
     @Column(nullable = false)
     private boolean enabled = true;
 
-    // Plain FK — Oscar's Team entity owns the JPA relationship
-    @Column(name = "team_id")
+    // Read-only — Team.students @OneToMany @JoinColumn owns writes to this FK
+    @Column(name = "team_id", insertable = false, updatable = false)
     private Integer teamId;
 
     public PeerEvaluationUser() {}
