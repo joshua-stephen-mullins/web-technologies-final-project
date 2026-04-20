@@ -67,17 +67,13 @@ Defined in `team.projectpulse.system.StatusCode`:
 
 ---
 
-## Pagination
+## List Endpoints
 
-Use Spring Data's `Pageable` and `Page` for paginated endpoints.
+All list endpoints return a plain array in the `data` field — no pagination wrapper.
 
-- Clients pass pagination parameters as query params: `?page=0&size=10&sort=name,asc`
-- The `data` field in the `Result` contains the `Page` object, which includes:
-  - `content` — the list of items
-  - `totalElements` — total number of items
-  - `totalPages` — total number of pages
-  - `number` — current page number (0-based)
-  - `size` — page size
+- Clients may pass optional query parameters for filtering (e.g., `?name=spring`)
+- Filtering is implemented via JPA Specifications on the backend
+- Results are not paginated; the full matching list is returned
 
 Example response:
 
@@ -86,13 +82,10 @@ Example response:
   "flag": true,
   "code": 200,
   "message": "Find All Success",
-  "data": {
-    "content": [],
-    "totalElements": 50,
-    "totalPages": 5,
-    "number": 0,
-    "size": 10
-  }
+  "data": [
+    { "id": 1, "name": "Spring 2026" },
+    { "id": 2, "name": "Fall 2026" }
+  ]
 }
 ```
 
@@ -100,9 +93,52 @@ Example response:
 
 ## Authentication
 
-- **Login:** HTTP Basic Auth (username and password)
-- **Subsequent requests:** JWT token in the `Authorization` header
+### Login
+
+Send credentials as JSON to the login endpoint:
+
+```
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "username": "user@example.com",
+  "password": "yourpassword"
+}
+```
+
+A successful response returns a JWT token:
+
+```json
+{
+  "flag": true,
+  "code": 200,
+  "message": "Login successful",
+  "data": {
+    "token": "<jwt>",
+    "username": "user@example.com",
+    "roles": "ROLE_ADMIN"
+  }
+}
+```
+
+### Authenticated Requests
+
+Include the JWT token in the `Authorization` header on all subsequent requests:
 
 ```
 Authorization: Bearer <token>
 ```
+
+Tokens expire after 1 hour. The frontend stores the token in `localStorage` and attaches it automatically via the Axios interceptor in `axiosClient.ts`.
+
+### Public Endpoints (no token required)
+
+| Method | URL |
+|--------|-----|
+| POST | `/api/auth/login` |
+| POST | `/api/users/register` |
+| POST | `/api/users/forgot-password` |
+| POST | `/api/users/reset-password` |
+
+All other endpoints require a valid Bearer token.
