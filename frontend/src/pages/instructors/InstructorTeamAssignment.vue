@@ -50,6 +50,14 @@
               <span class="instructor-email">{{ instructor.email }}</span>
               <span v-if="isCurrentlyAssigned(instructor.id)" class="assigned-badge">Assigned</span>
             </label>
+            <v-btn
+              v-if="isCurrentlyAssigned(instructor.id)"
+              icon="mdi-close"
+              size="x-small"
+              variant="text"
+              color="error"
+              @click.stop="promptRemove(instructor)"
+            />
           </div>
           <div v-if="store.instructors.length === 0" class="empty-msg">No instructors found</div>
         </template>
@@ -83,6 +91,25 @@
       </div>
     </v-dialog>
 
+    <!-- Remove Confirmation Dialog -->
+    <v-dialog v-model="removeDialog" max-width="440">
+      <div class="confirm-card">
+        <h2 class="confirm-title">Remove Instructor</h2>
+        <p class="confirm-body">
+          Remove <strong>{{ instructorToRemove?.firstName }} {{ instructorToRemove?.lastName }}</strong>
+          from <strong>{{ selectedTeam?.name }}</strong>?
+        </p>
+        <p class="confirm-note">They will receive an email notification about this removal.</p>
+        <div v-if="removeError" class="error-msg">{{ removeError }}</div>
+        <div class="confirm-actions">
+          <v-btn variant="text" @click="removeDialog = false">Cancel</v-btn>
+          <v-btn color="error" rounded="xl" :loading="removing" @click="confirmRemove">
+            Remove
+          </v-btn>
+        </div>
+      </div>
+    </v-dialog>
+
     <div v-if="successMsg" class="success-msg">{{ successMsg }}</div>
   </div>
 </template>
@@ -99,6 +126,10 @@ const selectedIds = ref(new Set<number>())
 const confirmDialog = ref(false)
 const submitting = ref(false)
 const submitError = ref('')
+const removeDialog = ref(false)
+const instructorToRemove = ref<any>(null)
+const removing = ref(false)
+const removeError = ref('')
 const successMsg = ref('')
 const loadError = ref('')
 
@@ -155,6 +186,32 @@ function getInstructorLabel(id: number): string {
 function openConfirm() {
   submitError.value = ''
   confirmDialog.value = true
+}
+
+function promptRemove(instructor: any) {
+  instructorToRemove.value = instructor
+  removeError.value = ''
+  successMsg.value = ''
+  removeDialog.value = true
+}
+
+async function confirmRemove() {
+  removing.value = true
+  removeError.value = ''
+  try {
+    await store.removeInstructorFromTeam(selectedTeam.value.id, instructorToRemove.value.id)
+    const updated = teamInstructorMap[selectedTeam.value.id].filter(
+      (i: any) => i.id !== instructorToRemove.value.id
+    )
+    teamInstructorMap[selectedTeam.value.id] = updated
+    selectedIds.value = new Set(updated.map((i: any) => i.id))
+    removeDialog.value = false
+    successMsg.value = `${instructorToRemove.value.firstName} ${instructorToRemove.value.lastName} removed from "${selectedTeam.value.name}". Notification sent.`
+  } catch (e: any) {
+    removeError.value = e?.response?.data?.message ?? 'Removal failed. Please try again.'
+  } finally {
+    removing.value = false
+  }
 }
 
 async function submitAssignment() {

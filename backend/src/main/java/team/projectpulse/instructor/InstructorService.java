@@ -100,14 +100,18 @@ public class InstructorService {
         return team.getInstructors();
     }
 
-    // UC-20: Remove an instructor from a team
+    // UC-20: Remove an instructor from a team and notify them
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional
     public void removeInstructorFromTeam(Integer teamId, Integer instructorId) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new ObjectNotFoundException("team", teamId));
-        team.getInstructors().removeIf(u -> u.getId().equals(instructorId));
-        teamRepository.save(team);
+        boolean removed = team.getInstructors().removeIf(u -> u.getId().equals(instructorId));
+        if (removed) {
+            teamRepository.save(team);
+            instructorRepository.findById(instructorId)
+                    .ifPresent(instructor -> notifyInstructorOfRemoval(instructor, team));
+        }
     }
 
     private void notifyInstructorOfAssignment(Instructor instructor, Team team) {
@@ -117,6 +121,16 @@ public class InstructorService {
         message.setText("Hello " + instructor.getFirstName() + ",\n\n"
                 + "You have been assigned to supervise team \"" + team.getName() + "\".\n\n"
                 + "Log in to view your team: " + frontendUrl + "\n");
+        mailSender.send(message);
+    }
+
+    private void notifyInstructorOfRemoval(Instructor instructor, Team team) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(instructor.getUsername());
+        message.setSubject("Team Assignment Update – Project Pulse");
+        message.setText("Hello " + instructor.getFirstName() + ",\n\n"
+                + "You have been removed from team \"" + team.getName() + "\" in Project Pulse.\n\n"
+                + "Please contact your administrator if you have any questions.\n");
         mailSender.send(message);
     }
 }
