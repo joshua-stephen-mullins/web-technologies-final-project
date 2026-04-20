@@ -51,6 +51,7 @@ const router = createRouter({
         // --- Whitney: Instructors ---
         { path: 'instructors', component: () => import('@/pages/instructors/InstructorList.vue') },
         { path: 'instructors/invite', component: () => import('@/pages/instructors/InstructorInvite.vue') },
+        { path: 'instructors/assign-teams', component: () => import('@/pages/instructors/InstructorTeamAssignment.vue') },
         { path: 'instructors/:id', component: () => import('@/pages/instructors/InstructorDetail.vue') },
 
         // --- Whitney: Evaluations ---
