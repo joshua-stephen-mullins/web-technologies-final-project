@@ -5,6 +5,8 @@ import org.springframework.stereotype.Component;
 import team.projectpulse.instructor.Instructor;
 import team.projectpulse.instructor.dto.InstructorDto;
 
+import java.util.List;
+
 // Owner: Whitney (Person 3)
 @Component
 public class InstructorToInstructorDtoConverter implements Converter<Instructor, InstructorDto> {
@@ -16,7 +18,8 @@ public class InstructorToInstructorDtoConverter implements Converter<Instructor,
                 source.getFirstName(),
                 source.getLastName(),
                 source.getUsername(),
-                source.isEnabled()
+                source.isEnabled(),
+                List.of()
         );
     }
 }

@@ -1,11 +1,15 @@
 package team.projectpulse.instructor;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import team.projectpulse.instructor.dto.InstructorDetailDto;
+import team.projectpulse.instructor.dto.InstructorDto;
+import team.projectpulse.section.Section;
 import team.projectpulse.system.exception.ObjectNotFoundException;
 import team.projectpulse.team.Team;
 import team.projectpulse.team.TeamRepository;
@@ -13,7 +17,12 @@ import team.projectpulse.user.PeerEvaluationUser;
 import team.projectpulse.user.PeerEvaluationUserRepository;
 import team.projectpulse.user.userinvitation.UserInvitationService;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -56,10 +65,97 @@ public class InstructorService {
         return count;
     }
 
-    // UC-21: List all instructors
+    // UC-21: Find instructors matching optional search criteria, sorted by academic year desc then last name asc
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_INSTRUCTOR')")
-    public List<Instructor> findAllInstructors() {
-        return instructorRepository.findAll(InstructorSpecs.hasRole("ROLE_INSTRUCTOR"));
+    @Transactional(readOnly = true)
+    public List<InstructorDto> findInstructors(String firstName, String lastName, String teamName, Boolean enabled) {
+        Specification<Instructor> spec = InstructorSpecs.hasRole("ROLE_INSTRUCTOR");
+        if (firstName != null && !firstName.isBlank()) spec = spec.and(InstructorSpecs.hasFirstName(firstName));
+        if (lastName != null && !lastName.isBlank()) spec = spec.and(InstructorSpecs.hasLastName(lastName));
+        if (teamName != null && !teamName.isBlank()) spec = spec.and(InstructorSpecs.hasTeamName(teamName));
+        if (enabled != null) spec = spec.and(InstructorSpecs.isEnabled(enabled));
+
+        List<Instructor> instructors = new ArrayList<>(instructorRepository.findAll(spec));
+        instructors.sort(Comparator
+                .comparingInt(this::maxSectionYear).reversed()
+                .thenComparing(Instructor::getLastName));
+
+        return instructors.stream().map(this::toInstructorDto).toList();
+    }
+
+    private int maxSectionYear(Instructor instructor) {
+        return instructor.getTeams().stream()
+                .map(Team::getSection)
+                .filter(Objects::nonNull)
+                .mapToInt(section -> section.getStartDate().getYear())
+                .max()
+                .orElse(0);
+    }
+
+    private InstructorDto toInstructorDto(Instructor instructor) {
+        List<String> teamNames = instructor.getTeams().stream()
+                .map(Team::getName)
+                .sorted()
+                .toList();
+        return new InstructorDto(
+                instructor.getId(),
+                instructor.getFirstName(),
+                instructor.getLastName(),
+                instructor.getUsername(),
+                instructor.isEnabled(),
+                teamNames
+        );
+    }
+
+    // UC-22: View details of a single instructor with teams grouped by section
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_INSTRUCTOR')")
+    @Transactional(readOnly = true)
+    public InstructorDetailDto findInstructor(Integer instructorId) {
+        Instructor instructor = instructorRepository.findById(instructorId)
+                .filter(i -> i.getRoles().contains("ROLE_INSTRUCTOR"))
+                .orElseThrow(() -> new ObjectNotFoundException("instructor", instructorId));
+
+        Map<Integer, Section> sectionMap = new LinkedHashMap<>();
+        Map<Integer, List<Team>> teamsBySectionId = new LinkedHashMap<>();
+        for (Team team : instructor.getTeams()) {
+            Section section = team.getSection();
+            sectionMap.put(section.getId(), section);
+            teamsBySectionId.computeIfAbsent(section.getId(), k -> new ArrayList<>()).add(team);
+        }
+
+        List<InstructorDetailDto.SectionTeams> teamsBySection = sectionMap.entrySet().stream()
+                .sorted(Map.Entry.<Integer, Section>comparingByValue(
+                        Comparator.comparing(Section::getStartDate).reversed()
+                ))
+                .map(entry -> new InstructorDetailDto.SectionTeams(
+                        entry.getKey(),
+                        entry.getValue().getName(),
+                        teamsBySectionId.get(entry.getKey()).stream()
+                                .map(t -> new InstructorDetailDto.TeamSummary(t.getId(), t.getName()))
+                                .sorted(Comparator.comparing(InstructorDetailDto.TeamSummary::name))
+                                .toList()
+                ))
+                .toList();
+
+        return new InstructorDetailDto(
+                instructor.getId(),
+                instructor.getFirstName(),
+                instructor.getLastName(),
+                instructor.getUsername(),
+                instructor.isEnabled(),
+                teamsBySection
+        );
+    }
+
+    // UC-23: Deactivate an instructor
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @Transactional
+    public void deactivateInstructor(Integer instructorId) {
+        Instructor instructor = instructorRepository.findById(instructorId)
+                .filter(i -> i.getRoles().contains("ROLE_INSTRUCTOR"))
+                .orElseThrow(() -> new ObjectNotFoundException("instructor", instructorId));
+        instructor.setEnabled(false);
+        instructorRepository.save(instructor);
     }
 
     // UC-19: Get instructors currently assigned to a team

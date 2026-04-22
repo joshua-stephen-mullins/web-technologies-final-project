@@ -1,6 +1,10 @@
 package team.projectpulse.instructor;
 
 import jakarta.persistence.*;
+import team.projectpulse.team.Team;
+
+import java.util.ArrayList;
+import java.util.List;
 
 // Owner: Whitney (Person 3)
 // Related UCs: UC-18,19,20,21,22,23,24,30
@@ -34,6 +38,14 @@ public class Instructor {
     @Column(name = "team_id")
     private Integer teamId;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "team_instructor",
+            joinColumns = @JoinColumn(name = "instructor_id"),
+            inverseJoinColumns = @JoinColumn(name = "team_id")
+    )
+    private List<Team> teams = new ArrayList<>();
+
     public Instructor() {}
 
     public Integer getId() { return id; }
@@ -59,4 +71,7 @@ public class Instructor {
 
     public Integer getTeamId() { return teamId; }
     public void setTeamId(Integer teamId) { this.teamId = teamId; }
+
+    public List<Team> getTeams() { return teams; }
+    public void setTeams(List<Team> teams) { this.teams = teams; }
 }

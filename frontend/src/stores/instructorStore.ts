@@ -14,10 +14,10 @@ export const useInstructorStore = defineStore('instructor', {
     async inviteInstructors(emails: string[]) {
       await instructorApi.invite(emails)
     },
-    async fetchInstructors() {
+    async fetchInstructors(params?: { firstName?: string; lastName?: string; teamName?: string; status?: string }) {
       this.loading = true
       try {
-        const res = await instructorApi.listAll()
+        const res = await instructorApi.listAll(params)
         this.instructors = res.data.data
       } finally {
         this.loading = false

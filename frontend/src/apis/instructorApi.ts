@@ -5,8 +5,14 @@ export const instructorApi = {
   invite(emails: string[]) {
     return axiosClient.post('/api/instructors/invite', emails)
   },
-  listAll() {
-    return axiosClient.get('/api/instructors')
+  listAll(params?: { firstName?: string; lastName?: string; teamName?: string; status?: string }) {
+    return axiosClient.get('/api/instructors', { params })
+  },
+  getById(id: number) {
+    return axiosClient.get(`/api/instructors/${id}`)
+  },
+  deactivate(id: number) {
+    return axiosClient.patch(`/api/instructors/${id}/deactivate`)
   },
   getTeamInstructors(teamId: number) {
     return axiosClient.get(`/api/teams/${teamId}/instructors`)

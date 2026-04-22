@@ -1,5 +1,6 @@
 package team.projectpulse.instructor;
 
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 
 public class InstructorSpecs {
@@ -23,5 +24,13 @@ public class InstructorSpecs {
     public static Specification<Instructor> hasRole(String role) {
         return (root, query, cb) ->
                 cb.like(root.get("roles"), "%" + role + "%");
+    }
+
+    public static Specification<Instructor> hasTeamName(String teamName) {
+        return (root, query, cb) -> {
+            query.distinct(true);
+            var teamJoin = root.join("teams", JoinType.INNER);
+            return cb.like(cb.lower(teamJoin.get("name")), "%" + teamName.toLowerCase() + "%");
+        };
     }
 }

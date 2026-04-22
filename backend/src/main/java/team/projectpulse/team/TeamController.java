@@ -78,7 +78,7 @@ public class TeamController {
 
     private List<InstructorDto> toInstructorDtos(List<PeerEvaluationUser> users) {
         return users.stream()
-                .map(u -> new InstructorDto(u.getId(), u.getFirstName(), u.getLastName(), u.getUsername(), u.isEnabled()))
+                .map(u -> new InstructorDto(u.getId(), u.getFirstName(), u.getLastName(), u.getUsername(), u.isEnabled(), List.of()))
                 .toList();
     }
 }
