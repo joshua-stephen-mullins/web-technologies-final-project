@@ -45,7 +45,8 @@ public class PeerEvaluation {
     private List<Rating> ratings = new ArrayList<>();
 
     @PrePersist
-    protected void onCreate() {
+    @PreUpdate
+    protected void onSave() {
         submittedAt = LocalDateTime.now();
     }
 
