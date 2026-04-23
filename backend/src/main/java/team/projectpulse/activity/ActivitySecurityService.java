@@ -4,8 +4,18 @@ import org.springframework.stereotype.Service;
 
 // Owner: Oscar (Person 2)
 // Ensures students can only modify their own activities
-@Service
+@Service("activitySecurity")
 public class ActivitySecurityService {
-    // TODO: Implement
-    // - isActivityOwner(activityId, username): boolean
+
+    private final ActivityRepository activityRepository;
+
+    public ActivitySecurityService(ActivityRepository activityRepository) {
+        this.activityRepository = activityRepository;
+    }
+
+    public boolean isActivityOwner(Integer activityId, String username) {
+        return activityRepository.findById(activityId)
+                .map(a -> a.getStudent() != null && a.getStudent().getUsername().equals(username))
+                .orElse(false);
+    }
 }
