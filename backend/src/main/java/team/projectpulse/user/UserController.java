@@ -13,6 +13,10 @@ import team.projectpulse.user.dto.ResetPasswordRequest;
 import team.projectpulse.user.dto.UserRegistrationRequest;
 import team.projectpulse.user.dto.UserUpdateRequest;
 import team.projectpulse.user.resetpassword.PasswordResetService;
+import team.projectpulse.user.userinvitation.UserInvitation;
+import team.projectpulse.user.userinvitation.UserInvitationService;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -21,13 +25,28 @@ public class UserController {
     private final UserService userService;
     private final UserToUserDtoConverter userConverter;
     private final PasswordResetService passwordResetService;
+    private final UserInvitationService invitationService;
 
     public UserController(UserService userService,
                           UserToUserDtoConverter userConverter,
-                          PasswordResetService passwordResetService) {
+                          PasswordResetService passwordResetService,
+                          UserInvitationService invitationService) {
         this.userService = userService;
         this.userConverter = userConverter;
         this.passwordResetService = passwordResetService;
+        this.invitationService = invitationService;
+    }
+
+    // UC-25/30: Validate invite token and return associated email (pre-fills registration form)
+    @GetMapping("/register/validate")
+    public Result validateToken(@RequestParam String token) {
+        try {
+            UserInvitation invitation = invitationService.validateToken(token);
+            return new Result(true, StatusCode.SUCCESS, "Token valid",
+                    Map.of("email", invitation.getEmail()));
+        } catch (IllegalStateException e) {
+            return new Result(false, StatusCode.UNAUTHORIZED, "already_used");
+        }
     }
 
     // UC-25 / UC-30: Complete registration via invite token

@@ -26,6 +26,13 @@ public class InstructorController {
         return new Result(true, StatusCode.SUCCESS, "Found instructor", dto);
     }
 
+    // UC-24: Reactivate a deactivated instructor
+    @PatchMapping("/{id}/reactivate")
+    public Result reactivateInstructor(@PathVariable Integer id) {
+        instructorService.reactivateInstructor(id);
+        return new Result(true, StatusCode.SUCCESS, "Instructor reactivated");
+    }
+
     // UC-23: Deactivate an instructor
     @PatchMapping("/{id}/deactivate")
     public Result deactivateInstructor(@PathVariable Integer id) {

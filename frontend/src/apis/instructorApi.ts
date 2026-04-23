@@ -14,6 +14,9 @@ export const instructorApi = {
   deactivate(id: number) {
     return axiosClient.patch(`/api/instructors/${id}/deactivate`)
   },
+  reactivate(id: number) {
+    return axiosClient.patch(`/api/instructors/${id}/reactivate`)
+  },
   getTeamInstructors(teamId: number) {
     return axiosClient.get(`/api/teams/${teamId}/instructors`)
   },

@@ -38,7 +38,7 @@
             color="success"
             size="small"
             rounded="xl"
-            disabled
+            @click="reactivateDialog = true"
           >
             Reactivate
           </v-btn>
@@ -67,6 +67,24 @@
 
       <div v-if="successMsg" class="success-msg">{{ successMsg }}</div>
     </template>
+
+    <!-- Reactivate Confirmation Dialog -->
+    <v-dialog v-model="reactivateDialog" max-width="440">
+      <div class="confirm-card">
+        <h2 class="confirm-title">Reactivate Instructor</h2>
+        <p class="confirm-body">
+          Reactivate <strong>{{ instructor?.firstName }} {{ instructor?.lastName }}</strong>?
+          They will regain access to the System and receive an email notification.
+        </p>
+        <div v-if="reactivateError" class="error-msg">{{ reactivateError }}</div>
+        <div class="confirm-actions">
+          <v-btn variant="text" @click="reactivateDialog = false">Cancel</v-btn>
+          <v-btn color="success" rounded="xl" :loading="reactivating" @click="confirmReactivate">
+            Confirm Reactivation
+          </v-btn>
+        </div>
+      </div>
+    </v-dialog>
 
     <!-- Deactivate Confirmation Dialog -->
     <v-dialog v-model="deactivateDialog" max-width="500">
@@ -149,6 +167,10 @@ const deactivateReason = ref('')
 const deactivating = ref(false)
 const deactivateError = ref('')
 
+const reactivateDialog = ref(false)
+const reactivating = ref(false)
+const reactivateError = ref('')
+
 onMounted(async () => {
   try {
     const res = await instructorApi.getById(Number(route.params.id))
@@ -165,6 +187,21 @@ function openDeactivate() {
   deactivateError.value = ''
   successMsg.value = ''
   deactivateDialog.value = true
+}
+
+async function confirmReactivate() {
+  reactivating.value = true
+  reactivateError.value = ''
+  try {
+    await instructorApi.reactivate(instructor.value!.id)
+    instructor.value!.enabled = true
+    reactivateDialog.value = false
+    successMsg.value = `${instructor.value!.firstName} ${instructor.value!.lastName} has been reactivated. A notification email has been sent.`
+  } catch (e: any) {
+    reactivateError.value = e?.response?.data?.message ?? 'Reactivation failed. Please try again.'
+  } finally {
+    reactivating.value = false
+  }
 }
 
 async function confirmDeactivate() {
@@ -341,6 +378,12 @@ async function confirmDeactivate() {
   font-size: 18px;
   font-weight: 600;
   color: #F5F5F7;
+  margin: 0;
+}
+
+.confirm-body {
+  font-size: 14px;
+  color: rgba(255,255,255,0.6);
   margin: 0;
 }
 

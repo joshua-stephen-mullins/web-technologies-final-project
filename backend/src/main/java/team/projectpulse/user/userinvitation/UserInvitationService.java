@@ -1,6 +1,9 @@
 package team.projectpulse.user.userinvitation;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -10,6 +13,8 @@ import java.util.UUID;
 
 @Service
 public class UserInvitationService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserInvitationService.class);
 
     private final UserInvitationRepository invitationRepository;
     private final JavaMailSender mailSender;
@@ -30,7 +35,12 @@ public class UserInvitationService {
         invitation.setInvitationToken(UUID.randomUUID().toString());
 
         invitationRepository.save(invitation);
-        sendEmail(invitation);
+        try {
+            sendEmail(invitation);
+        } catch (MailException e) {
+            log.warn("Failed to send invitation email to {} — token saved, email skipped: {}", invitation.getEmail(), e.getMessage());
+            log.info("Registration link: {}/register?token={}", frontendUrl, invitation.getInvitationToken());
+        }
         return invitation;
     }
 

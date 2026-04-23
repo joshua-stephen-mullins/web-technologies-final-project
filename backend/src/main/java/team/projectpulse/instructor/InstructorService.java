@@ -158,6 +158,28 @@ public class InstructorService {
         instructorRepository.save(instructor);
     }
 
+    // UC-24: Reactivate a deactivated instructor and notify them by email
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @Transactional
+    public void reactivateInstructor(Integer instructorId) {
+        Instructor instructor = instructorRepository.findById(instructorId)
+                .filter(i -> i.getRoles().contains("ROLE_INSTRUCTOR"))
+                .orElseThrow(() -> new ObjectNotFoundException("instructor", instructorId));
+        instructor.setEnabled(true);
+        instructorRepository.save(instructor);
+        notifyInstructorOfReactivation(instructor);
+    }
+
+    private void notifyInstructorOfReactivation(Instructor instructor) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(instructor.getUsername());
+        message.setSubject("Account Reactivated – Project Pulse");
+        message.setText("Hello " + instructor.getFirstName() + ",\n\n"
+                + "Your Project Pulse account has been reactivated. You can now log in.\n\n"
+                + frontendUrl + "\n");
+        mailSender.send(message);
+    }
+
     // UC-19: Get instructors currently assigned to a team
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_INSTRUCTOR')")
     public List<PeerEvaluationUser> findTeamInstructors(Integer teamId) {

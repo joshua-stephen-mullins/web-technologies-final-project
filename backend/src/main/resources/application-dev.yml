@@ -8,6 +8,14 @@ spring:
       ddl-auto: none
   flyway:
     enabled: false
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: whitney@akred.com
+    password: YOUR_GMAIL_APP_PASSWORD
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
 
 logging:
   level:
