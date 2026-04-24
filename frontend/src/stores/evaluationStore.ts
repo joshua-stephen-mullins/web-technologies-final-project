@@ -29,6 +29,15 @@ export const useEvaluationStore = defineStore('evaluation', {
         this.loading = false
       }
     },
-    // TODO: fetchStudentEvalReport(studentId, start, end), fetchStudentWARReport(studentId, start, end)
+    async fetchStudentReport(studentId: number, startWeekId: number, endWeekId: number) {
+      this.loading = true
+      try {
+        const res = await evaluationApi.getStudentReport(studentId, startWeekId, endWeekId)
+        this.studentReport = res.data.data
+      } finally {
+        this.loading = false
+      }
+    },
+    // TODO: fetchStudentWARReport(studentId, start, end)
   },
 })

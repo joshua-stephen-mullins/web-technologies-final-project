@@ -31,4 +31,10 @@ export const evaluationApi = {
   getSectionReport(sectionId: number, weekId: number) {
     return axiosClient.get('/api/evaluations/section-report', { params: { sectionId, weekId } })
   },
+  getStudentReportWeeks(studentId: number) {
+    return axiosClient.get('/api/evaluations/student-report/weeks', { params: { studentId } })
+  },
+  getStudentReport(studentId: number, startWeekId: number, endWeekId: number) {
+    return axiosClient.get('/api/evaluations/student-report', { params: { studentId, startWeekId, endWeekId } })
+  },
 }

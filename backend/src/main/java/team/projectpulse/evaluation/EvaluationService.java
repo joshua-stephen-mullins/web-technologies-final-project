@@ -7,6 +7,7 @@ import team.projectpulse.evaluation.dto.BatchEvaluationRequest;
 import team.projectpulse.evaluation.dto.MyEvaluationReportDto;
 import team.projectpulse.evaluation.dto.SectionEvaluationReportDto;
 import team.projectpulse.evaluation.dto.SectionSummaryDto;
+import team.projectpulse.evaluation.dto.StudentEvaluationReportDto;
 import team.projectpulse.evaluation.dto.SubmitFormDto;
 import team.projectpulse.instructor.Instructor;
 import team.projectpulse.instructor.InstructorRepository;
@@ -302,6 +303,123 @@ public class EvaluationService {
 
         String weekLabel = "Week " + week.getWeekNumber() + ": " + week.getStartDate() + " – " + week.getEndDate();
         return new SectionEvaluationReportDto(weekLabel, studentReports, nonSubmitters);
+    }
+
+    // UC-33: completed weeks for a student's section (for the range selectors)
+    @Transactional(readOnly = true)
+    public List<SubmitFormDto.WeekInfo> getStudentReportWeeks(String username, Integer studentId) {
+        Instructor instructor = instructorRepository.findByUsername(username)
+                .orElseThrow(() -> new ObjectNotFoundException("instructor", username));
+
+        PeerEvaluationUser student = userRepository.findById(studentId)
+                .orElseThrow(() -> new ObjectNotFoundException("student", studentId));
+
+        if (student.getTeamId() == null) {
+            throw new IllegalStateException("Student is not assigned to a team.");
+        }
+
+        Team team = teamRepository.findById(student.getTeamId())
+                .orElseThrow(() -> new ObjectNotFoundException("team", student.getTeamId()));
+
+        Integer sectionId = team.getSection().getId();
+        boolean hasAccess = instructor.getTeams().stream()
+                .anyMatch(t -> t.getSection().getId().equals(sectionId));
+        if (!hasAccess) {
+            throw new AccessDeniedException("You do not have access to this student's section.");
+        }
+
+        LocalDate today = LocalDate.now();
+        return weekRepository.findBySectionIdOrderByWeekNumber(sectionId).stream()
+                .filter(w -> w.getEndDate().isBefore(today))
+                .map(w -> new SubmitFormDto.WeekInfo(w.getId(), w.getWeekNumber(), w.getStartDate(), w.getEndDate()))
+                .toList();
+    }
+
+    // UC-33: generate peer evaluation report for one student over a week range
+    @Transactional(readOnly = true)
+    public StudentEvaluationReportDto getStudentReport(String username, Integer studentId,
+                                                        Integer startWeekId, Integer endWeekId) {
+        Instructor instructor = instructorRepository.findByUsername(username)
+                .orElseThrow(() -> new ObjectNotFoundException("instructor", username));
+
+        PeerEvaluationUser student = userRepository.findById(studentId)
+                .orElseThrow(() -> new ObjectNotFoundException("student", studentId));
+
+        if (student.getTeamId() == null) {
+            throw new IllegalStateException("Student is not assigned to a team.");
+        }
+
+        Team team = teamRepository.findById(student.getTeamId())
+                .orElseThrow(() -> new ObjectNotFoundException("team", student.getTeamId()));
+
+        Integer sectionId = team.getSection().getId();
+        boolean hasAccess = instructor.getTeams().stream()
+                .anyMatch(t -> t.getSection().getId().equals(sectionId));
+        if (!hasAccess) {
+            throw new AccessDeniedException("You do not have access to this student's section.");
+        }
+
+        Week startWeek = weekRepository.findById(startWeekId)
+                .orElseThrow(() -> new ObjectNotFoundException("week", startWeekId));
+        Week endWeek = weekRepository.findById(endWeekId)
+                .orElseThrow(() -> new ObjectNotFoundException("week", endWeekId));
+
+        if (startWeek.getWeekNumber() > endWeek.getWeekNumber()) {
+            throw new IllegalArgumentException("Start week must be before or equal to end week.");
+        }
+
+        // Max grade = sum of all criterion max scores
+        List<Criterion> criteria = (team.getSection().getRubric() != null)
+                ? team.getSection().getRubric().getCriteria()
+                : List.of();
+        double maxGrade = criteria.stream().mapToDouble(c -> c.getMaxScore().doubleValue()).sum();
+
+        LocalDate today = LocalDate.now();
+        List<Week> rangeWeeks = weekRepository.findBySectionIdOrderByWeekNumber(sectionId).stream()
+                .filter(w -> w.getEndDate().isBefore(today)
+                        && w.getWeekNumber() >= startWeek.getWeekNumber()
+                        && w.getWeekNumber() <= endWeek.getWeekNumber())
+                .toList();
+
+        List<StudentEvaluationReportDto.WeekReportDto> weekReports = new ArrayList<>();
+        for (Week week : rangeWeeks) {
+            List<PeerEvaluation> evals = evaluationRepository.findByEvaluatee_IdAndWeek_Id(student.getId(), week.getId());
+
+            double grade = 0.0;
+            if (!evals.isEmpty()) {
+                double totalSum = evals.stream()
+                        .mapToDouble(e -> e.getRatings().stream()
+                                .mapToDouble(r -> r.getScore().doubleValue()).sum())
+                        .sum();
+                grade = totalSum / evals.size();
+            }
+
+            List<StudentEvaluationReportDto.EvaluationDetailDto> details = evals.stream()
+                    .map(eval -> {
+                        String evaluatorName = eval.getEvaluator().getFirstName() + " " + eval.getEvaluator().getLastName();
+                        List<StudentEvaluationReportDto.CriterionScoreDto> scores = eval.getRatings().stream()
+                                .map(r -> new StudentEvaluationReportDto.CriterionScoreDto(
+                                        r.getCriterion().getName(),
+                                        r.getCriterion().getDescription(),
+                                        r.getScore().doubleValue(),
+                                        r.getCriterion().getMaxScore().doubleValue()
+                                ))
+                                .toList();
+                        return new StudentEvaluationReportDto.EvaluationDetailDto(
+                                evaluatorName,
+                                eval.getPublicComments(),
+                                eval.getPrivateComments(),
+                                scores
+                        );
+                    })
+                    .toList();
+
+            String weekLabel = week.getStartDate() + " – " + week.getEndDate();
+            weekReports.add(new StudentEvaluationReportDto.WeekReportDto(weekLabel, grade, maxGrade, details));
+        }
+
+        String studentName = student.getFirstName() + " " + student.getLastName();
+        return new StudentEvaluationReportDto(studentName, weekReports);
     }
 
     @Transactional

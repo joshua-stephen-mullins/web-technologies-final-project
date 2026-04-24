@@ -8,6 +8,7 @@ import team.projectpulse.evaluation.dto.BatchEvaluationRequest;
 import team.projectpulse.evaluation.dto.MyEvaluationReportDto;
 import team.projectpulse.evaluation.dto.SectionEvaluationReportDto;
 import team.projectpulse.evaluation.dto.SectionSummaryDto;
+import team.projectpulse.evaluation.dto.StudentEvaluationReportDto;
 import team.projectpulse.evaluation.dto.SubmitFormDto;
 import team.projectpulse.system.Result;
 import team.projectpulse.system.StatusCode;
@@ -78,6 +79,27 @@ public class EvaluationController {
                                    @RequestParam Integer weekId) {
         String username = jwt.getSubject();
         SectionEvaluationReportDto report = evaluationService.getSectionReport(username, sectionId, weekId);
+        return new Result(true, StatusCode.SUCCESS, "Report generated", report);
+    }
+
+    // UC-33: completed weeks for a student's section (for range selectors)
+    @GetMapping("/student-report/weeks")
+    @PreAuthorize("hasAuthority('ROLE_INSTRUCTOR')")
+    public Result getStudentReportWeeks(@AuthenticationPrincipal Jwt jwt, @RequestParam Integer studentId) {
+        String username = jwt.getSubject();
+        List<SubmitFormDto.WeekInfo> weeks = evaluationService.getStudentReportWeeks(username, studentId);
+        return new Result(true, StatusCode.SUCCESS, "Weeks loaded", weeks);
+    }
+
+    // UC-33: generate peer evaluation report for one student over a week range
+    @GetMapping("/student-report")
+    @PreAuthorize("hasAuthority('ROLE_INSTRUCTOR')")
+    public Result getStudentReport(@AuthenticationPrincipal Jwt jwt,
+                                   @RequestParam Integer studentId,
+                                   @RequestParam Integer startWeekId,
+                                   @RequestParam Integer endWeekId) {
+        String username = jwt.getSubject();
+        StudentEvaluationReportDto report = evaluationService.getStudentReport(username, studentId, startWeekId, endWeekId);
         return new Result(true, StatusCode.SUCCESS, "Report generated", report);
     }
 
