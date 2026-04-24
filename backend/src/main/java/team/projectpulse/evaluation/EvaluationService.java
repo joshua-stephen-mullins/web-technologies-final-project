@@ -1,11 +1,18 @@
 package team.projectpulse.evaluation;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team.projectpulse.evaluation.dto.BatchEvaluationRequest;
+import team.projectpulse.evaluation.dto.MyEvaluationReportDto;
+import team.projectpulse.evaluation.dto.SectionEvaluationReportDto;
+import team.projectpulse.evaluation.dto.SectionSummaryDto;
 import team.projectpulse.evaluation.dto.SubmitFormDto;
+import team.projectpulse.instructor.Instructor;
+import team.projectpulse.instructor.InstructorRepository;
 import team.projectpulse.rubric.Criterion;
 import team.projectpulse.rubric.CriterionRepository;
+import team.projectpulse.section.Section;
 import team.projectpulse.section.Week;
 import team.projectpulse.section.WeekRepository;
 import team.projectpulse.system.exception.ObjectNotFoundException;
@@ -14,11 +21,10 @@ import team.projectpulse.team.TeamRepository;
 import team.projectpulse.user.PeerEvaluationUser;
 import team.projectpulse.user.PeerEvaluationUserRepository;
 
-import team.projectpulse.evaluation.dto.MyEvaluationReportDto;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,19 +41,22 @@ public class EvaluationService {
     private final CriterionRepository criterionRepository;
     private final PeerEvaluationRepository evaluationRepository;
     private final RatingRepository ratingRepository;
+    private final InstructorRepository instructorRepository;
 
     public EvaluationService(PeerEvaluationUserRepository userRepository,
                              TeamRepository teamRepository,
                              WeekRepository weekRepository,
                              CriterionRepository criterionRepository,
                              PeerEvaluationRepository evaluationRepository,
-                             RatingRepository ratingRepository) {
+                             RatingRepository ratingRepository,
+                             InstructorRepository instructorRepository) {
         this.userRepository = userRepository;
         this.teamRepository = teamRepository;
         this.weekRepository = weekRepository;
         this.criterionRepository = criterionRepository;
         this.evaluationRepository = evaluationRepository;
         this.ratingRepository = ratingRepository;
+        this.instructorRepository = instructorRepository;
     }
 
     @Transactional(readOnly = true)
@@ -174,6 +183,125 @@ public class EvaluationService {
 
         return new MyEvaluationReportDto(weekLabel, studentName, evaluations.size(),
                 criterionAverages, publicComments, totalAverageScore, totalMaxScore);
+    }
+
+    // UC-31: sections the instructor has access to (unique sections across their teams)
+    @Transactional(readOnly = true)
+    public List<SectionSummaryDto> getInstructorSections(String username) {
+        Instructor instructor = instructorRepository.findByUsername(username)
+                .orElseThrow(() -> new ObjectNotFoundException("instructor", username));
+
+        Map<Integer, SectionSummaryDto> seen = new LinkedHashMap<>();
+        for (Team team : instructor.getTeams()) {
+            Section s = team.getSection();
+            seen.putIfAbsent(s.getId(), new SectionSummaryDto(s.getId(), s.getName()));
+        }
+        return new ArrayList<>(seen.values());
+    }
+
+    // UC-31: completed weeks for a section (instructor must have access)
+    @Transactional(readOnly = true)
+    public List<SubmitFormDto.WeekInfo> getSectionReportWeeks(String username, Integer sectionId) {
+        Instructor instructor = instructorRepository.findByUsername(username)
+                .orElseThrow(() -> new ObjectNotFoundException("instructor", username));
+
+        boolean hasAccess = instructor.getTeams().stream()
+                .anyMatch(t -> t.getSection().getId().equals(sectionId));
+        if (!hasAccess) {
+            throw new AccessDeniedException("You do not have access to this section.");
+        }
+
+        LocalDate today = LocalDate.now();
+        return weekRepository.findBySectionIdOrderByWeekNumber(sectionId).stream()
+                .filter(w -> w.getEndDate().isBefore(today))
+                .sorted((a, b) -> b.getEndDate().compareTo(a.getEndDate()))
+                .map(w -> new SubmitFormDto.WeekInfo(w.getId(), w.getWeekNumber(), w.getStartDate(), w.getEndDate()))
+                .toList();
+    }
+
+    // UC-31: generate peer evaluation report for all students in a section for a given week
+    @Transactional(readOnly = true)
+    public SectionEvaluationReportDto getSectionReport(String username, Integer sectionId, Integer weekId) {
+        Instructor instructor = instructorRepository.findByUsername(username)
+                .orElseThrow(() -> new ObjectNotFoundException("instructor", username));
+
+        boolean hasAccess = instructor.getTeams().stream()
+                .anyMatch(t -> t.getSection().getId().equals(sectionId));
+        if (!hasAccess) {
+            throw new AccessDeniedException("You do not have access to this section.");
+        }
+
+        Week week = weekRepository.findById(weekId)
+                .orElseThrow(() -> new ObjectNotFoundException("week", weekId));
+
+        // All students across all teams in the section, sorted by last name then first name
+        List<PeerEvaluationUser> allStudents = teamRepository.findBySectionId(sectionId).stream()
+                .flatMap(t -> t.getStudents().stream())
+                .collect(java.util.stream.Collectors.toMap(
+                        PeerEvaluationUser::getId, s -> s, (a, b) -> a, LinkedHashMap::new))
+                .values().stream()
+                .sorted(Comparator.comparing(PeerEvaluationUser::getLastName)
+                        .thenComparing(PeerEvaluationUser::getFirstName))
+                .toList();
+
+        // Max grade = sum of all criterion max scores
+        Section section = teamRepository.findBySectionId(sectionId).stream()
+                .findFirst()
+                .map(Team::getSection)
+                .orElse(null);
+        List<Criterion> criteria = (section != null && section.getRubric() != null)
+                ? section.getRubric().getCriteria()
+                : List.of();
+        double maxGrade = criteria.stream().mapToDouble(c -> c.getMaxScore().doubleValue()).sum();
+
+        List<SectionEvaluationReportDto.StudentReportDto> studentReports = new ArrayList<>();
+        for (PeerEvaluationUser student : allStudents) {
+            List<PeerEvaluation> evals = evaluationRepository.findByEvaluatee_IdAndWeek_Id(student.getId(), weekId);
+
+            // Algorithm: avg(sum of criterion scores per evaluator)
+            double grade = 0.0;
+            if (!evals.isEmpty()) {
+                double totalSum = evals.stream()
+                        .mapToDouble(e -> e.getRatings().stream()
+                                .mapToDouble(r -> r.getScore().doubleValue()).sum())
+                        .sum();
+                grade = totalSum / evals.size();
+            }
+
+            List<SectionEvaluationReportDto.EvaluationDetailDto> details = evals.stream()
+                    .map(eval -> {
+                        String evaluatorName = eval.getEvaluator().getFirstName() + " " + eval.getEvaluator().getLastName();
+                        List<SectionEvaluationReportDto.CriterionScoreDto> scores = eval.getRatings().stream()
+                                .map(r -> new SectionEvaluationReportDto.CriterionScoreDto(
+                                        r.getCriterion().getName(),
+                                        r.getCriterion().getDescription(),
+                                        r.getScore().doubleValue(),
+                                        r.getCriterion().getMaxScore().doubleValue()
+                                ))
+                                .toList();
+                        return new SectionEvaluationReportDto.EvaluationDetailDto(
+                                evaluatorName,
+                                eval.getPublicComments(),
+                                eval.getPrivateComments(),
+                                scores
+                        );
+                    })
+                    .toList();
+
+            String studentName = student.getLastName() + ", " + student.getFirstName();
+            studentReports.add(new SectionEvaluationReportDto.StudentReportDto(
+                    student.getId(), studentName, grade, maxGrade, details
+            ));
+        }
+
+        // Non-submitters: students who submitted no evaluations for this week
+        List<String> nonSubmitters = allStudents.stream()
+                .filter(s -> evaluationRepository.findByEvaluator_IdAndWeek_Id(s.getId(), weekId).isEmpty())
+                .map(s -> s.getFirstName() + " " + s.getLastName())
+                .toList();
+
+        String weekLabel = "Week " + week.getWeekNumber() + ": " + week.getStartDate() + " – " + week.getEndDate();
+        return new SectionEvaluationReportDto(weekLabel, studentReports, nonSubmitters);
     }
 
     @Transactional

@@ -22,4 +22,13 @@ export const evaluationApi = {
   getMyReport(weekId: number) {
     return axiosClient.get('/api/evaluations/my-report', { params: { weekId } })
   },
+  getSectionReportSections() {
+    return axiosClient.get('/api/evaluations/section-report/sections')
+  },
+  getSectionReportWeeks(sectionId: number) {
+    return axiosClient.get('/api/evaluations/section-report/weeks', { params: { sectionId } })
+  },
+  getSectionReport(sectionId: number, weekId: number) {
+    return axiosClient.get('/api/evaluations/section-report', { params: { sectionId, weekId } })
+  },
 }

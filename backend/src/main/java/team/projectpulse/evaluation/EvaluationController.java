@@ -6,6 +6,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import team.projectpulse.evaluation.dto.BatchEvaluationRequest;
 import team.projectpulse.evaluation.dto.MyEvaluationReportDto;
+import team.projectpulse.evaluation.dto.SectionEvaluationReportDto;
+import team.projectpulse.evaluation.dto.SectionSummaryDto;
 import team.projectpulse.evaluation.dto.SubmitFormDto;
 import team.projectpulse.system.Result;
 import team.projectpulse.system.StatusCode;
@@ -47,6 +49,35 @@ public class EvaluationController {
     public Result getMyReport(@AuthenticationPrincipal Jwt jwt, @RequestParam Integer weekId) {
         String username = jwt.getSubject();
         MyEvaluationReportDto report = evaluationService.getMyReport(username, weekId);
+        return new Result(true, StatusCode.SUCCESS, "Report generated", report);
+    }
+
+    // UC-31: sections the instructor has access to
+    @GetMapping("/section-report/sections")
+    @PreAuthorize("hasAuthority('ROLE_INSTRUCTOR')")
+    public Result getInstructorSections(@AuthenticationPrincipal Jwt jwt) {
+        String username = jwt.getSubject();
+        List<SectionSummaryDto> sections = evaluationService.getInstructorSections(username);
+        return new Result(true, StatusCode.SUCCESS, "Sections loaded", sections);
+    }
+
+    // UC-31: completed weeks for a section
+    @GetMapping("/section-report/weeks")
+    @PreAuthorize("hasAuthority('ROLE_INSTRUCTOR')")
+    public Result getSectionReportWeeks(@AuthenticationPrincipal Jwt jwt, @RequestParam Integer sectionId) {
+        String username = jwt.getSubject();
+        List<SubmitFormDto.WeekInfo> weeks = evaluationService.getSectionReportWeeks(username, sectionId);
+        return new Result(true, StatusCode.SUCCESS, "Weeks loaded", weeks);
+    }
+
+    // UC-31: generate peer evaluation report for the entire section
+    @GetMapping("/section-report")
+    @PreAuthorize("hasAuthority('ROLE_INSTRUCTOR')")
+    public Result getSectionReport(@AuthenticationPrincipal Jwt jwt,
+                                   @RequestParam Integer sectionId,
+                                   @RequestParam Integer weekId) {
+        String username = jwt.getSubject();
+        SectionEvaluationReportDto report = evaluationService.getSectionReport(username, sectionId, weekId);
         return new Result(true, StatusCode.SUCCESS, "Report generated", report);
     }
 
