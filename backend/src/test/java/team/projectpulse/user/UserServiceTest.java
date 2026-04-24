@@ -72,7 +72,7 @@ class UserServiceTest {
         invitation.setEmail("student@test.com");
         invitation.setRole("ROLE_STUDENT");
 
-        UserRegistrationRequest req = new UserRegistrationRequest("Alice", "Smith", "password123");
+        UserRegistrationRequest req = new UserRegistrationRequest("Alice", null, "Smith", "password123");
 
         given(invitationService.validateToken("valid-token")).willReturn(invitation);
         given(userRepository.existsByUsername("student@test.com")).willReturn(false);
@@ -103,7 +103,7 @@ class UserServiceTest {
         given(userRepository.existsByUsername("admin@test.com")).willReturn(true);
 
         assertThatThrownBy(() -> userService.registerUser("token",
-                new UserRegistrationRequest("A", "B", "pw")))
+                new UserRegistrationRequest("A", null, "B", "pw")))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("already exists");
     }
