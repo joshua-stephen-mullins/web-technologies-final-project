@@ -7,6 +7,7 @@ export const useActivityStore = defineStore('activity', {
   state: () => ({
     activities: [] as any[],
     warReport: [] as any[],
+    studentWARReport: [] as any[],
     loading: false,
   }),
   actions: {
@@ -39,6 +40,15 @@ export const useActivityStore = defineStore('activity', {
       try {
         const res = await activityApi.getTeamWARReport(teamId, weekId)
         this.warReport = res.data.data
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchStudentWARReport(studentId: number, weekIds: number[]) {
+      this.loading = true
+      try {
+        const res = await activityApi.getStudentWARReport(studentId, weekIds)
+        this.studentWARReport = res.data.data
       } finally {
         this.loading = false
       }
