@@ -1,3 +1,5 @@
+import axiosClient from './axiosClient'
+
 // Owner: Oscar (Person 2) — UC-11,15,16,17
 export const studentApi = {
   search(params?: { firstName?: string; lastName?: string; email?: string; teamId?: number }) {

@@ -1,3 +1,5 @@
+import axiosClient from './axiosClient'
+
 // Owner: Oscar (Person 2) — UC-27,32
 export const activityApi = {
   getMyWeeks() {

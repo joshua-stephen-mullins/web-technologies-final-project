@@ -49,7 +49,7 @@ public class TeamService {
     // UC-7: Find teams with optional search filters
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_INSTRUCTOR')")
     public List<Team> findAllTeams(String name, Integer sectionId) {
-        Specification<Team> spec = Specification.where(null);
+        Specification<Team> spec = (root, query, cb) -> cb.conjunction();
         if (name != null && !name.isBlank()) {
             spec = spec.and(TeamSpecs.hasName(name));
         }
