@@ -56,11 +56,16 @@
           </div>
 
           <div class="field-group mb-4">
+            <label class="field-label">Middle Initial <span class="field-optional">(optional)</span></label>
+            <input v-model="form.middleInitial" class="field-input" placeholder="e.g. A" maxlength="1" @keyup.enter="goToReview" style="max-width: 80px" />
+          </div>
+
+          <div class="field-group mb-4">
             <label class="field-label">Last Name</label>
             <input v-model="form.lastName" class="field-input" placeholder="Enter your last name" @keyup.enter="goToReview" />
           </div>
 
-          <div class="field-group mb-6">
+          <div class="field-group mb-4">
             <label class="field-label">Password</label>
             <div class="password-wrapper">
               <input
@@ -73,6 +78,24 @@
               <button type="button" class="pw-toggle" @click="showPassword = !showPassword" tabindex="-1">
                 <v-icon size="18" color="rgba(255,255,255,0.4)">
                   {{ showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline' }}
+                </v-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="field-group mb-6">
+            <label class="field-label">Re-enter Password</label>
+            <div class="password-wrapper">
+              <input
+                v-model="form.confirmPassword"
+                :type="showConfirmPassword ? 'text' : 'password'"
+                class="field-input"
+                placeholder="Re-enter your password"
+                @keyup.enter="goToReview"
+              />
+              <button type="button" class="pw-toggle" @click="showConfirmPassword = !showConfirmPassword" tabindex="-1">
+                <v-icon size="18" color="rgba(255,255,255,0.4)">
+                  {{ showConfirmPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline' }}
                 </v-icon>
               </button>
             </div>
@@ -99,6 +122,10 @@
             <div class="review-row">
               <span class="review-label">First Name</span>
               <span class="review-value">{{ form.firstName }}</span>
+            </div>
+            <div class="review-row" v-if="form.middleInitial">
+              <span class="review-label">Middle Initial</span>
+              <span class="review-value">{{ form.middleInitial.toUpperCase() }}</span>
             </div>
             <div class="review-row">
               <span class="review-label">Last Name</span>
@@ -147,8 +174,9 @@ const tokenState = ref<TokenState>('loading')
 const invitedEmail = ref('')
 const step = ref(1)
 
-const form = ref({ firstName: '', lastName: '', password: '' })
+const form = ref({ firstName: '', middleInitial: '', lastName: '', password: '', confirmPassword: '' })
 const showPassword = ref(false)
+const showConfirmPassword = ref(false)
 const formError = ref('')
 const submitError = ref('')
 const submitting = ref(false)
@@ -176,8 +204,10 @@ onMounted(async () => {
 function goToReview() {
   formError.value = ''
   if (!form.value.firstName.trim()) { formError.value = 'First name is required.'; return }
+  if (form.value.middleInitial && !/^[A-Za-z]$/.test(form.value.middleInitial)) { formError.value = 'Middle initial must be a single letter.'; return }
   if (!form.value.lastName.trim()) { formError.value = 'Last name is required.'; return }
   if (form.value.password.length < 8) { formError.value = 'Password must be at least 8 characters.'; return }
+  if (form.value.password !== form.value.confirmPassword) { formError.value = 'Passwords do not match.'; return }
   step.value = 2
 }
 
@@ -187,6 +217,7 @@ async function submit() {
   try {
     await userApi.register(token!, {
       firstName: form.value.firstName.trim(),
+      middleInitial: form.value.middleInitial.trim() || null,
       lastName: form.value.lastName.trim(),
       password: form.value.password,
     })
@@ -276,6 +307,14 @@ async function submit() {
   color: rgba(255,255,255,0.45);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.field-optional {
+  font-size: 11px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: rgba(255,255,255,0.25);
 }
 
 .field-input {

@@ -47,6 +47,9 @@ public class UserService implements UserDetailsService {
         PeerEvaluationUser user = new PeerEvaluationUser();
         user.setUsername(invitation.getEmail());
         user.setFirstName(request.firstName());
+        user.setMiddleInitial(request.middleInitial() != null && !request.middleInitial().isBlank()
+                ? request.middleInitial().toUpperCase()
+                : null);
         user.setLastName(request.lastName());
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setRoles(invitation.getRole());

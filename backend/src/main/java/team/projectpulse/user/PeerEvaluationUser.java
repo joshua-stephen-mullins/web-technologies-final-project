@@ -19,6 +19,9 @@ public class PeerEvaluationUser {
     @Column(name = "first_name", nullable = false)
     private String firstName;
 
+    @Column(name = "middle_initial")
+    private String middleInitial;
+
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
@@ -46,6 +49,9 @@ public class PeerEvaluationUser {
 
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
+
+    public String getMiddleInitial() { return middleInitial; }
+    public void setMiddleInitial(String middleInitial) { this.middleInitial = middleInitial; }
 
     public String getLastName() { return lastName; }
     public void setLastName(String lastName) { this.lastName = lastName; }

@@ -4,7 +4,7 @@ export const userApi = {
   validateToken(token: string) {
     return axiosClient.get(`/api/users/register/validate?token=${token}`)
   },
-  register(token: string, data: { firstName: string; lastName: string; password: string }) {
+  register(token: string, data: { firstName: string; middleInitial?: string | null; lastName: string; password: string }) {
     return axiosClient.post(`/api/users/register?token=${token}`, data)
   },
   getMe() {

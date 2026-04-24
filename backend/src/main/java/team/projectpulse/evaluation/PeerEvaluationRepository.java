@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface PeerEvaluationRepository extends JpaRepository<PeerEvaluation, Integer> {
     Optional<PeerEvaluation> findByEvaluator_IdAndEvaluatee_IdAndWeek_Id(Integer evaluatorId, Integer evaluateeId, Integer weekId);
     List<PeerEvaluation> findByEvaluator_IdAndWeek_Id(Integer evaluatorId, Integer weekId);
+    List<PeerEvaluation> findByEvaluatee_IdAndWeek_Id(Integer evaluateeId, Integer weekId);
 }

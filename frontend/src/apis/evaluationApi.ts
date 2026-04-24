@@ -16,4 +16,10 @@ export const evaluationApi = {
   }) {
     return axiosClient.post('/api/evaluations/batch', data)
   },
+  getMyReportWeeks() {
+    return axiosClient.get('/api/evaluations/my-report/weeks')
+  },
+  getMyReport(weekId: number) {
+    return axiosClient.get('/api/evaluations/my-report', { params: { weekId } })
+  },
 }
