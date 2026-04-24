@@ -16,7 +16,8 @@ public class UserToUserDtoConverter implements Converter<PeerEvaluationUser, Use
                 source.getFirstName(),
                 source.getLastName(),
                 source.getRoles(),
-                source.isEnabled()
+                source.isEnabled(),
+                source.getTeamId()
         );
     }
 }

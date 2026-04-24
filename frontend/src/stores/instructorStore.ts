@@ -24,7 +24,7 @@ export const useInstructorStore = defineStore('instructor', {
       }
     },
     async fetchTeams() {
-      const res = await teamApi.listAll()
+      const res = await teamApi.search()
       this.teams = res.data.data
     },
     async fetchTeamInstructors(teamId: number): Promise<any[]> {
